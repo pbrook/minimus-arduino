@@ -643,10 +643,26 @@ USBDevice_::USBDevice_()
 
 void USBDevice_::attach()
 {
+	uint8_t flags;
 	_usbConfiguration = 0;
+#ifdef UHWCON
 	UHWCON = 0x01;						// power internal reg
+#endif
+	USBCON = 0;							// Reset controller
 	USBCON = (1<<USBE)|(1<<FRZCLK);		// clock frozen, usb enabled
-	PLLCSR = 0x12;						// Need 16 MHz xtal
+#if F_CPU == 16000000L
+#ifdef PINDIV
+	flags = (1<<PINDIV);
+#else
+	flags = (1<<PLLP0);
+#endif
+#elif F_CPU == 8000000L
+	flags = 0;
+#else
+#error USB requires either 8 or 16 MHz xtal
+#endif
+	PLLCSR = flags;
+	PLLCSR = flags|(1<<PLLE);
 	while (!(PLLCSR & (1<<PLOCK)))		// wait for lock pll
 		;
 
@@ -655,7 +671,11 @@ void USBDevice_::attach()
 	// port touch at 1200 bps. This delay fixes this behaviour.
 	delay(1);
 
-	USBCON = ((1<<USBE)|(1<<OTGPADE));	// start USB clock
+	flags = (1<<USBE);
+#ifdef OTGPADE
+	flags |= (1<<OTGPADE);
+#endif
+	USBCON = flags;						// start USB clock
 	UDIEN = (1<<EORSTE)|(1<<SOFE);		// Enable interrupts for EOR (End of Reset) and SOF (start of frame)
 	UDCON = 0;							// enable attach resistor
 	

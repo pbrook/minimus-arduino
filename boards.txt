@@ -18,6 +18,6 @@ minimus32.build.mcu=atmega32u2
 minimus32.build.f_cpu=16000000L
 minimus32.build.vid=0x2341
 minimus32.build.pid=0x8036
-minimus32.build.core=arduino:arduino
+minimus32.build.core=minimus
 minimus32.build.variant=minimus32
 

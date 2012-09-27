@@ -28,41 +28,35 @@
 #include <avr/pgmspace.h>
 
 #define NUM_ANALOG_INPUTS 0
-#define NUM_DIGITAL_PINS 21
+#define NUM_DIGITAL_PINS 24
 
 // We only have a small USB buffer
 #define USB_EP_SIZE 16
 
-// FIXME probably wrong
-#if 0
-#define TX_RX_LED_INIT	DDRD |= (1<<5), DDRB |= (1<<0)
-#define TXLED0			PORTD |= (1<<5)
-#define TXLED1			PORTD &= ~(1<<5)
-#define RXLED0			PORTB |= (1<<0)
-#define RXLED1			PORTB &= ~(1<<0)
-#else
-#define TX_RX_LED_INIT do {} while(0)
-#define TXLED0 do {} while(0)
-#define TXLED1 do {} while(0)
-#define RXLED0 do {} while(0)
-#define RXLED1 do {} while(0)
-#endif
+// Use LED A (D7 - PD6) for USB activity
+// Mapping both RX and TX to the same pin will cause some flickering
+// but is close enough
+#define TX_RX_LED_INIT PORTD |= (1<<6), DDRB |= (1<<5)
+#define TXLED0 PORTD |= (1<<5)
+#define TXLED1 PORTD &= ~(1<<5)
+#define RXLED0 PORTD |= (1<<5)
+#define RXLED1 PORTD &= ~(1<<5)
 
-// Map SPI port to 'new' pins D14..D17
-// FIXME Probably not true
-static const uint8_t SS   = 19;
-static const uint8_t MOSI = 0;
-static const uint8_t MISO = 1;
-static const uint8_t SCK  = 20;
+static const uint8_t SS   = 10;
+static const uint8_t MOSI = 12;
+static const uint8_t MISO = 13;
+static const uint8_t SCK  = 11;
 
-// FIXME probably wrong
-#define digitalPinToPCICR(p)    (((uint8_t *)0))
-#define digitalPinToPCICRbit(p) 0
-#define digitalPinToPCMSK(p)    (((uint8_t *)0))
-#define digitalPinToPCMSKbit(p) ( ((p) >= 8 && (p) <= 11) ? (p) - 4 : ((p) == 14 ? 3 : ((p) == 15 ? 1 : ((p) == 16 ? 2 : ((p) == 17 ? 0 : (p - A8 + 4))))))
+extern const uint8_t PROGMEM pin_to_pcint_PGM[24];
+#define digitalPinToPCICR(p)	((pgm_read_byte(pin_to_pcint_PGM + (p)) < 12) ? &PCICR : (uint8_t *)0)
+#define digitalPinToPCICRbit(p) (pgm_read_byte(pin_to_pcint_PGM + (p)) >> 3)
+#define digitalPinToPCMSK(p)    ((pgm_read_byte(pin_to_pcint_PGM + (p)) >> 3) ? &PCMSK0 : &PCMSK1)
+#define digitalPinToPCMSKbit(p) (pgm_read_byte(pin_to_pcint_PGM + (p)) & 7)
 
 #define analogPinToChannel(P)  ( -1 )
 
+// FIXME We do have timers for some pins
+#undef digitalPinToTimer
 #define digitalPinToTimer(P) (NOT_ON_TIMER)
 
 #ifdef ARDUINO_MAIN
@@ -73,32 +67,60 @@ static const uint8_t SCK  = 20;
 
 // ATMEL ATMEGA32U2 / Minimus 32
 //
-// D0				PB2				MOSI
-// D1				PB3				MISO
-// D2				PB4
-// D3				PB5
-// D4				PB6
-// D5#				PB7
-// D6				PC7
-// D7#				PC6
-// !RESET
-// D8#				PC5
-// D9				PC4
-// VCC
-// --USB--
-// D10				PC2
-// D11				PD0
-// D12				PD1
-// D13				PD2				RX
-// D14				PD3				TX
-// D15				PD4
-// D16				PD5				LEBB (Blue)
-// D17				PD6				LEDA (Red)
-// D18				PD7				HWB
-// D19				PB0
-// D20				PB1				SCK
-// GND
+// Pins numbered counter-clockwise starting from USB connector
 //
+// D0				PC2				PCINT11
+// D1				PD0
+// D2				PD1
+// D3				PD2				RX
+// D4				PD3				TX
+// D5				PD4
+// D6				PD5				LEBB (Blue)
+// [D7]				PD6				LEDA (Red/USB)
+// D8				PD7				HWB
+// D9				PB0				SS/PCINT0
+// D10				PB1				SCK/PCINT1
+// [D11]							GND
+//
+// D12				PB2				MOSI/PCINT2
+// D13				PB3				MISO/PCINT3
+// D14				PB4				PCINT4
+// D15				PB5				PCINT5
+// D16				PB6				PCINT6
+// D17				PB7				PCINT7
+// D18				PC7
+// D19				PC6				PCINT8
+// [D20]							!RESET
+// D21				PC5				PCINT9
+// D22				PC4				PCINT10
+// [D23]							VCC
+
+const uint8_t PROGMEM pin_to_pcint_PGM[24] = {
+	11, // D0 - PC2
+	0xff, // D1 - PD0
+	0xff, // D2 - PD1
+	0xff, // D3 - PD2
+	0xff, // D4 - PD3
+	0xff, // D5 - PD4
+	0xff, // D6 - PD5
+	0xff, // D7 - PD6
+	0xff, // D8 - PD7
+	0, // D9 - PB0
+	1, // D10 - PB1
+	0xff, // GND
+	2, // D12 - PB2
+	3, // D13 - PB3
+	4, // D14 - PB4
+	5, // D15 - PB5
+	6, // D16 - PB6
+	7, // D17 - PB7
+	0xff, // D18 - PC7
+	8, // D19 - PC6
+	0xff, // !RESET
+	9, // D21 - PC5
+	10,	// D22 - PC4
+	0xff // VCC
+};
 
 // these arrays map port names (e.g. port B) to the
 // appropriate addresses for various functions (e.g. reading
@@ -127,56 +149,58 @@ const uint16_t PROGMEM port_to_input_PGM[] = {
 	(uint16_t) &PIND,
 };
 
-const uint8_t PROGMEM digital_pin_to_port_PGM[30] = {
-	PB, // D0 - PB2
-	PB,	// D1 - PB3
-	PB, // D2 - PB4
-	PB,	// D3 - PB5
-	PB,	// D4 - PB6
-	PB, // D5 - PB7
-	PC, // D6 - PC7
-	PC, // D7 - PC6
-
-	PC, // D8 - PC5
-	PC,	// D9 - PC4
-
-	PC, // D10 - PC2
-	PD,	// D11 - PD0
-	PD, // D12 - PD1
-	PD, // D13 - PD2
-	PD,	// D14 - PD3
-	PD,	// D15 - PD4
-	PD,	// D16 - PD5
-	PD,	// D17 - PD6
-	PD,	// D18 - PD7
-	PB, // D19 - PB0
-	PB, // D20 - PB1
+const uint8_t PROGMEM digital_pin_to_port_PGM[24] = {
+	PC, // D0 - PC2
+	PD,	// D1 - PD0
+	PD, // D2 - PD1
+	PD, // D3 - PD2
+	PD,	// D4 - PD3
+	PD,	// D5 - PD4
+	PD,	// D6 - PD5
+	PD,	// D7 - PD6
+	PD,	// D8 - PD7
+	PB, // D9 - PB0
+	PB, // D10 - PB1
+	NOT_A_PIN, // GND
+	PB, // D12 - PB2
+	PB,	// D13 - PB3
+	PB, // D14 - PB4
+	PB,	// D15 - PB5
+	PB,	// D16 - PB6
+	PB, // D17 - PB7
+	PC, // D18 - PC7
+	PC, // D19 - PC6
+	NOT_A_PIN, // !RESET
+	PC, // D21 - PC5
+	PC,	// D22 - PC4
+	NOT_A_PIN // VCC
 };
 
-const uint8_t PROGMEM digital_pin_to_bit_mask_PGM[30] = {
-	_BV(2), // D0 - PB2
-	_BV(3),	// D1 - PB3
-	_BV(4), // D2 - PB4
-	_BV(5),	// D3 - PB5
-	_BV(6),	// D4 - PB6
-	_BV(7), // D5 - PB7
-	_BV(7), // D6 - PC7
-	_BV(6), // D7 - PC6
-
-	_BV(5), // D8 - PC5
-	_BV(4),	// D9 - PC4
-
-	_BV(2), // D10 - PC2
-	_BV(0),	// D11 - PD0
-	_BV(1), // D12 - PD1
-	_BV(2), // D13 - PD2
-	_BV(3),	// D14 - PD3
-	_BV(4),	// D15 - PD4
-	_BV(5),	// D16 - PD5
-	_BV(6),	// D17 - PD6
-	_BV(7),	// D18 - PD7
-	_BV(0), // D19 - PB0
-	_BV(1), // D20 - PB1
+const uint8_t PROGMEM digital_pin_to_bit_mask_PGM[24] = {
+	_BV(2), // D0 - PC2
+	_BV(0),	// D1 - PD0
+	_BV(1), // D2 - PD1
+	_BV(2), // D3 - PD2
+	_BV(3),	// D4 - PD3
+	_BV(4),	// D5 - PD4
+	_BV(5),	// D6 - PD5
+	_BV(6),	// D7 - PD6
+	_BV(7),	// D8 - PD7
+	_BV(0), // D9 - PB0
+	_BV(1), // D10 - PB1
+	0,		// GND
+	_BV(2), // D12 - PB2
+	_BV(3),	// D13 - PB3
+	_BV(4), // D14 - PB4
+	_BV(5),	// D15 - PB5
+	_BV(6),	// D16 - PB6
+	_BV(7), // D17 - PB7
+	_BV(7), // D18 - PC7
+	_BV(6), // D19 - PC6
+	0,		// !RESET
+	_BV(5), // D21 - PC5
+	_BV(4),	// D22 - PC4
+	0,		// VCC
 };
 
 #if 0
@@ -205,50 +229,4 @@ const uint8_t PROGMEM digital_pin_to_timer_PGM[16] = {
 #endif
 
 #endif /* ARDUINO_MAIN */
-
-#if 0
-#if (ARDUINO <= 101)
-#ifdef __cplusplus
-
-// Ugly hacks to workaround broken arduino USB core
-class _minimus_UHWCON {
-	public:
-	operator uint8_t() const {return 0;}
-	void operator= (const int a)
-	{
-	  USBCON=0;
-	}
-};
-#define UHWCON ({__extension__ _minimus_UHWCON minimus_HWCON; minimus_HWCON;})
-
-class _minimus_PLLCSR {
-	public:
-	operator uint8_t() const
-	{
-		uint8_t val = PLLCSR;
-		if (val & (1 << PLLP0))
-			val |= 0x10;
-		return val & 0x13;
-	}
-	void operator= (const uint8_t val)
-	{
-		uint8_t flags = 0;
-		if (val & 0x10)
-			flags |= (1 << PLLP0);
-		PLLCSR = (1 << PLLP0) | (1 << PLLE);//flags | (val & 3);
-	}
-};
-#undef PLLCSR
-#define PLLCSR ({__extension__ _minimus_PLLCSR minimus_PLLCSR; minimus_PLLCSR;})
-
-// Define this to something we know we will be enabling at the same time
-#define OTGPADE USBE
-
-#else
-
-#undef PLLCSR
-
-#endif
-#endif
-#endif
 #endif /* Pins_Arduino_h */

@@ -280,11 +280,12 @@ int USB_Send(u8 ep, const void* d, int len)
 			continue;
 		}
 
-		if (n > len)
-			n = len;
-		len -= n;
 		{
 			LockEP lock(ep);
+			u8 n = USB_SendSpace(ep);
+			if (n > len)
+				n = len;
+			len -= n;
 			if (ep & TRANSFER_ZERO)
 			{
 				while (n--)

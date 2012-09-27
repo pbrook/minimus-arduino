@@ -36,11 +36,11 @@
 // Use LED A (D7 - PD6) for USB activity
 // Mapping both RX and TX to the same pin will cause some flickering
 // but is close enough
-#define TX_RX_LED_INIT PORTD |= (1<<6), DDRB |= (1<<5)
-#define TXLED0 PORTD |= (1<<5)
-#define TXLED1 PORTD &= ~(1<<5)
-#define RXLED0 PORTD |= (1<<5)
-#define RXLED1 PORTD &= ~(1<<5)
+#define TX_RX_LED_INIT DDRD |= (1<<6), PORTD |= (1<<6)
+#define TXLED0 PORTD |= (1<<6)
+#define TXLED1 PORTD &= ~(1<<6)
+#define RXLED0 PORTD |= (1<<6)
+#define RXLED1 PORTD &= ~(1<<6)
 
 static const uint8_t SS   = 10;
 static const uint8_t MOSI = 12;
@@ -75,8 +75,8 @@ extern const uint8_t PROGMEM pin_to_pcint_PGM[24];
 // D3				PD2				RX
 // D4				PD3				TX
 // D5				PD4
-// D6				PD5				LEBB (Blue)
-// [D7]				PD6				LEDA (Red/USB)
+// D6				PD5				LEB B (Blue)
+// [D7]				PD6				LED A (Red/USB)
 // D8				PD7				HWB
 // D9				PB0				SS/PCINT0
 // D10				PB1				SCK/PCINT1
@@ -156,8 +156,8 @@ const uint8_t PROGMEM digital_pin_to_port_PGM[24] = {
 	PD, // D3 - PD2
 	PD,	// D4 - PD3
 	PD,	// D5 - PD4
-	PD,	// D6 - PD5
-	PD,	// D7 - PD6
+	PD, // D6 - PD5
+	NOT_A_PIN,	// D7 - PD6
 	PD,	// D8 - PD7
 	PB, // D9 - PB0
 	PB, // D10 - PB1

@@ -1,0 +1,23 @@
+# See: http://code.google.com/p/arduino/wiki/Platforms
+
+##############################################################
+
+minimus32.name=Minimus 32
+minimus32.upload.protocol=avr109
+minimus32.upload.maximum_size=28672
+minimus32.upload.speed=57600
+minimus32.upload.disable_flushing=true
+minimus32.bootloader.low_fuses=0xff
+minimus32.bootloader.high_fuses=0xd8
+minimus32.bootloader.extended_fuses=0xcb
+minimus32.bootloader.path=caterina
+minimus32.bootloader.file=Caterina-Minimus.hex
+minimus32.bootloader.unlock_bits=0x3F
+minimus32.bootloader.lock_bits=0x2F
+minimus32.build.mcu=atmega32u2
+minimus32.build.f_cpu=16000000L
+minimus32.build.vid=0x2341
+minimus32.build.pid=0x8036
+minimus32.build.core=arduino:arduino
+minimus32.build.variant=minimus32
+

@@ -55,10 +55,6 @@ extern const uint8_t PROGMEM pin_to_pcint_PGM[24];
 
 #define analogPinToChannel(P)  ( -1 )
 
-// FIXME We do have timers for some pins
-#undef digitalPinToTimer
-#define digitalPinToTimer(P) (NOT_ON_TIMER)
-
 #ifdef ARDUINO_MAIN
 
 // On the Arduino board, digital pins are also used
@@ -70,7 +66,7 @@ extern const uint8_t PROGMEM pin_to_pcint_PGM[24];
 // Pins numbered counter-clockwise starting from USB connector
 //
 // D0				PC2				PCINT11
-// D1				PD0
+// D1#				PD0				OC0B
 // D2				PD1
 // D3				PD2				RX
 // D4				PD3				TX
@@ -87,11 +83,11 @@ extern const uint8_t PROGMEM pin_to_pcint_PGM[24];
 // D14				PB4				PCINT4
 // D15				PB5				PCINT5
 // D16				PB6				PCINT6
-// D17				PB7				PCINT7
+// D17#				PB7				PCINT7/OC0A/OC1C
 // D18				PC7
-// D19				PC6				PCINT8
+// D19#				PC6				PCINT8/OC1A
 // [D20]							!RESET
-// D21				PC5				PCINT9
+// D21#				PC5				PCINT9/OC1B
 // D22				PC4				PCINT10
 // [D23]							VCC
 
@@ -203,30 +199,33 @@ const uint8_t PROGMEM digital_pin_to_bit_mask_PGM[24] = {
 	0,		// VCC
 };
 
-#if 0
-// FIXME: needs updating
-const uint8_t PROGMEM digital_pin_to_timer_PGM[16] = {
-	NOT_ON_TIMER,	
+const uint8_t PROGMEM digital_pin_to_timer_PGM[24] = {
+	NOT_ON_TIMER,
+	TIMER0B,		/* 1 */
 	NOT_ON_TIMER,
 	NOT_ON_TIMER,
-	TIMER0B,		/* 3 */
 	NOT_ON_TIMER,
-	TIMER3A,		/* 5 */
-	TIMER4D,		/* 6 */
-	NOT_ON_TIMER,	
-	
-	NOT_ON_TIMER,	
-	TIMER1A,		/* 9 */
-	TIMER1B,		/* 10 */
-	TIMER0A,		/* 11 */
-	
-	NOT_ON_TIMER,	
-	TIMER4A,		/* 13 */
-	
-	NOT_ON_TIMER,	
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	TIMER0A,	/* 17 */
+	NOT_ON_TIMER,
+	TIMER1A,	/* 18 */
+	NOT_ON_TIMER,
+	TIMER1B,	/* 19 */
+	NOT_ON_TIMER,
 	NOT_ON_TIMER,
 };
-#endif
 
 #endif /* ARDUINO_MAIN */
 #endif /* Pins_Arduino_h */

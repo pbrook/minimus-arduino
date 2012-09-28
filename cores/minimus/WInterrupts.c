@@ -47,7 +47,7 @@ void attachInterrupt(uint8_t interruptNum, void (*userFunc)(void), int mode) {
     // Enable the interrupt.
       
     switch (interruptNum) {
-#if defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega32U2__)
 	// I hate doing this, but the register assignment differs between the 1280/2560
 	// and the 32U4.  Since avrlib defines registers PCMSK1 and PCMSK2 that aren't 
 	// even present on the 32U4 this is the only way to distinguish between them.
@@ -146,7 +146,7 @@ void detachInterrupt(uint8_t interruptNum) {
     // to the number of the EIMSK bit to clear, as this isn't true on the 
     // ATmega8.  There, INT0 is 6 and INT1 is 7.)
     switch (interruptNum) {
-#if defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega32U2__)
 	case 0:
 		EIMSK &= ~(1<<INT0);
 		break;
@@ -215,7 +215,7 @@ void attachInterruptTwi(void (*userFunc)(void) ) {
 }
 */
 
-#if defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega32U2__)
 SIGNAL(INT0_vect) {
 	if(intFunc[EXTERNAL_INT_0])
 		intFunc[EXTERNAL_INT_0]();

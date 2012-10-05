@@ -33,19 +33,32 @@
 // We only have a small USB buffer
 #define USB_EP_SIZE 16
 
-// Use LED A (D7 - PD6) for USB activity
-// Mapping both RX and TX to the same pin will cause some flickering
-// but is close enough
-#define TX_RX_LED_INIT DDRD |= (1<<6), PORTD |= (1<<6)
-#define TXLED0 PORTD |= (1<<6)
-#define TXLED1 PORTD &= ~(1<<6)
-#define RXLED0 PORTD |= (1<<6)
-#define RXLED1 PORTD &= ~(1<<6)
+extern uint8_t usb_rxtx_leds;
+static inline void
+usb_rxtx_update_leds(uint8_t state, uint8_t mask)
+{
+  if (usb_rxtx_leds & 0x80)
+    return;
+  usb_rxtx_leds = (usb_rxtx_leds & ~mask) | (state & mask);
+  if (usb_rxtx_leds)
+    PORTD &= ~(1<<6);
+  else
+    PORTD |= 1<<6;
+}
 
-static const uint8_t SS   = 10;
+#define USB_RXTX_LED_PIN 7
+
+// Use LED A (D7 - PD6) for USB activity
+#define TX_RX_LED_INIT DDRD |= (1<<6), PORTD |= (1<<6)
+#define TXLED0 usb_rxtx_update_leds(0, 1)
+#define TXLED1 usb_rxtx_update_leds(1, 1)
+#define RXLED0 usb_rxtx_update_leds(0, 2)
+#define RXLED1 usb_rxtx_update_leds(2, 2)
+
+static const uint8_t SS   = 9;
 static const uint8_t MOSI = 12;
 static const uint8_t MISO = 13;
-static const uint8_t SCK  = 11;
+static const uint8_t SCK  = 10;
 
 extern const uint8_t PROGMEM pin_to_pcint_PGM[24];
 #define digitalPinToPCICR(p)	((pgm_read_byte(pin_to_pcint_PGM + (p)) < 12) ? &PCICR : (uint8_t *)0)
@@ -72,7 +85,7 @@ extern const uint8_t PROGMEM pin_to_pcint_PGM[24];
 // D4				PD3				TX
 // D5				PD4
 // D6				PD5				LEB B (Blue)
-// [D7]				PD6				LED A (Red/USB)
+// D7				PD6				LED A (Red/USB)
 // D8				PD7				HWB
 // D9				PB0				SS/PCINT0
 // D10				PB1				SCK/PCINT1
@@ -153,7 +166,7 @@ const uint8_t PROGMEM digital_pin_to_port_PGM[24] = {
 	PD,	// D4 - PD3
 	PD,	// D5 - PD4
 	PD, // D6 - PD5
-	NOT_A_PIN,	// D7 - PD6
+	PD,	// D7 - PD6
 	PD,	// D8 - PD7
 	PB, // D9 - PB0
 	PB, // D10 - PB1
@@ -226,6 +239,8 @@ const uint8_t PROGMEM digital_pin_to_timer_PGM[24] = {
 	NOT_ON_TIMER,
 	NOT_ON_TIMER,
 };
+
+uint8_t usb_rxtx_leds;
 
 #endif /* ARDUINO_MAIN */
 #endif /* Pins_Arduino_h */

@@ -36,6 +36,9 @@ void pinMode(uint8_t pin, uint8_t mode)
 
 	if (port == NOT_A_PIN) return;
 
+	if (pin == USB_RXTX_LED_PIN)
+		usb_rxtx_leds = 0x80;
+
 	// JWS: can I let the optimizer do this?
 	reg = portModeRegister(port);
 	out = portOutputRegister(port);

@@ -68,8 +68,8 @@
 #ifdef BOARD_MINIMUS
 		#define LED_MASK		((1<<5)|(1<<6))
 		#define LED_SETUP()		DDRD |= LED_MASK; PORTD |= LED_MASK
-		#define L_LED_OFF()		PORTD &= ~(1<<6)
-		#define L_LED_ON()		PORTD |= (1<<6)
+		#define L_LED_ON()		PORTD &= ~(1<<6)
+		#define L_LED_OFF()		PORTD |= (1<<6)
 		#define L_LED_TOGGLE()	PORTD ^= (1<<6)
 		#define TX_LED_OFF()	update_leds(1,0)
 		#define TX_LED_ON()		update_leds(1,1)

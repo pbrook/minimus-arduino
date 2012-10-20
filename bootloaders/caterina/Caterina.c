@@ -127,8 +127,11 @@ int main(void)
 	wdt_disable();
 	
 	if (mcusr_state & (1<<EXTRF)) {
-		// External reset -  we should continue to self-programming mode.
-	} else if (mcusr_state == (1<<PORF) && pgm_read_word(0) != 0xFFFF) {		
+		// External reset -  we should continue to self-programming mode if HWB pressed.
+		DDRD &= ~(1<<7);
+		if (PIND & (1 << 7))
+			StartSketch();
+	} else if ((mcusr_state & (1<<PORF)) && pgm_read_word(0) != 0xFFFF) {
 		// After a power-on reset skip the bootloader and jump straight to sketch 
 		// if one exists.	
 		StartSketch();

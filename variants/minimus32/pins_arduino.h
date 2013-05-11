@@ -63,7 +63,7 @@ static const uint8_t SCK  = 10;
 extern const uint8_t PROGMEM pin_to_pcint_PGM[24];
 #define digitalPinToPCICR(p)	((pgm_read_byte(pin_to_pcint_PGM + (p)) < 12) ? &PCICR : (uint8_t *)0)
 #define digitalPinToPCICRbit(p) (pgm_read_byte(pin_to_pcint_PGM + (p)) >> 3)
-#define digitalPinToPCMSK(p)    ((pgm_read_byte(pin_to_pcint_PGM + (p)) >> 3) ? &PCMSK0 : &PCMSK1)
+#define digitalPinToPCMSK(p)    ((pgm_read_byte(pin_to_pcint_PGM + (p)) < 8) ? &PCMSK0 : &PCMSK1)
 #define digitalPinToPCMSKbit(p) (pgm_read_byte(pin_to_pcint_PGM + (p)) & 7)
 
 #define analogPinToChannel(P)  ( -1 )
@@ -233,9 +233,9 @@ const uint8_t PROGMEM digital_pin_to_timer_PGM[24] = {
 	NOT_ON_TIMER,
 	TIMER0A,	/* 17 */
 	NOT_ON_TIMER,
-	TIMER1A,	/* 18 */
+	TIMER1A,	/* 19 */
 	NOT_ON_TIMER,
-	TIMER1B,	/* 19 */
+	TIMER1B,	/* 21 */
 	NOT_ON_TIMER,
 	NOT_ON_TIMER,
 };
